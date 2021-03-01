@@ -2,7 +2,7 @@ class Keychain < Formula
   desc "User-friendly front-end to ssh-agent(1) and gpg-agent(1)"
   homepage "https://www.funtoo.org/Keychain"
   url "https://github.com/rafifos/keychain/archive/2.9.0.tar.gz"
-  sha256 "55eb7f8ce547dbd60b915b572a07d7b441f8018c694b06dfd3ba128c"
+  sha256 "81ca327d54e844cbf70910711da61852139cd357bb960318bafcfb2c58a7de10"
   license "GPL-2.0-only"
 
   livecheck do
