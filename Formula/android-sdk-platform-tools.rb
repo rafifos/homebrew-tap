@@ -2,9 +2,9 @@
 class AndroidSdkPlatformTools < Formula
   desc "Tools that interface with the Android platform, like adb and fastboot"
   homepage "https://developer.android.com/studio/releases/platform-tools"
-  url "https://dl.google.com/android/repository/platform-tools-latest-linux.zip"
-  version "30.0.5"
-  sha256 "d6d72d006c03bd55d49b6cef9f00295db02f0a31da10e121427e1f4cb43e7cb9"
+  url "https://dl.google.com/android/repository/platform-tools_r31.0.2-linux.zip"
+  version "31.0.2"
+  sha256 "cdde800a61766679abc5771596225b4e0081d01b20ffea51bde26c488bcbc677"
   license :cannot_represent
 
   bottle :unneeded
