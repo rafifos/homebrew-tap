@@ -1,4 +1,4 @@
-# Rafifo's Homebrew formulae
+# Rafifos's Homebrew formulae
 
 ## How do I install these formulae?
 
