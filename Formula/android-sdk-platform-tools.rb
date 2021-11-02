@@ -2,12 +2,10 @@
 class AndroidSdkPlatformTools < Formula
   desc "Tools that interface with the Android platform, like adb and fastboot"
   homepage "https://developer.android.com/studio/releases/platform-tools"
-  url "https://dl.google.com/android/repository/platform-tools_r31.0.2-linux.zip"
-  version "31.0.2"
-  sha256 "cdde800a61766679abc5771596225b4e0081d01b20ffea51bde26c488bcbc677"
+  url "https://dl.google.com/android/repository/platform-tools_r31.0.3-linux.zip"
+  version "31.0.3"
+  sha256 "e6cb61b92b5669ed6fd9645fad836d8f888321cd3098b75588a54679c204b7dc"
   license :cannot_represent
-
-  bottle :unneeded
 
   def install
     libexec.install Dir["*"]
