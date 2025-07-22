@@ -16,9 +16,6 @@ cask "hayase" do
 
   zap trash: [
     "~/Library/Application Support/hayase",
-    "~/Library/Caches/hayase",
     "~/Library/Logs/hayase",
-    "~/Library/Preferences/com.hayase.app.plist",
-    "~/Library/Saved Application State/com.hayase.app.savedState",
   ]
 end
