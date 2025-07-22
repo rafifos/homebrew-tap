@@ -20,7 +20,7 @@ jobs:
         run: |
           CURRENT_VERSION=$(grep 'version' Casks/hayase.rb | sed -E 's/.*version "([^"]+)".*/\1/')
           LATEST_VERSION=$(curl -s "https://api.github.com/repos/hayase-app/ui/tags" | jq -r '.[0].name')
-          DOWNLOAD_URL=$(curl -s https://api.github.com/repos/hayase-app/ui/releases/tags/$LATEST_VERSION | jq -r '.assets[]? | select(.name == "mac-hayase-'"${LATEST_VERSION#v}"'-mac.dmg") | .browser_download_url')
+          DOWNLOAD_URL=$(curl -s https://api.github.com/repos/hayase-app/ui/releases/tags/$LATEST_VERSION | jq -r '.assets[] | select(.name == "mac-hayase-'"${LATEST_VERSION#v}"'-mac.dmg") | .browser_download_url')
 
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
