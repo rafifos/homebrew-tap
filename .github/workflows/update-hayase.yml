@@ -21,9 +21,9 @@ jobs:
           # Get the latest release information from GitHub API
           LATEST_RELEASE=$(curl -s "https://api.github.com/repos/hayase-app/ui/releases/latest")
 
-          # Extract version and download URL
-          VERSION=$(echo "$LATEST_RELEASE" | grep '"tag_name":' | sed -E 's/.*"tag_name": *"v?([^"]+)".*/\1/')
-          DOWNLOAD_URL=$(echo "$LATEST_RELEASE" | grep '"browser_download_url":.*mac.*\.dmg"' | sed -E 's/.*"browser_download_url": *"([^"]+)".*/\1/')
+          # Extract version and download URL with better parsing
+          VERSION=$(echo "$LATEST_RELEASE" | jq -r '.tag_name' | sed 's/^v//')
+          DOWNLOAD_URL=$(echo "$LATEST_RELEASE" | jq -r '.assets[] | select(.name | contains("mac") and contains(".dmg")) | .browser_download_url')
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
