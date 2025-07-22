@@ -18,30 +18,24 @@ jobs:
       - name: Get latest Hayase release
         id: release
         run: |
-          # Get the latest release information from GitHub API
-          LATEST_RELEASE=$(curl -s "https://api.github.com/repos/hayase-app/ui/releases/latest")
+          CURRENT_VERSION=$(grep 'version' Casks/hayase.rb | sed -E 's/.*version "([^"]+)".*/\1/')
+          LATEST_VERSION=$(curl -s "https://api.github.com/repos/hayase-app/ui/tags" | jq -r '.[0].name')
+          DOWNLOAD_URL=$(curl -s https://api.github.com/repos/hayase-app/ui/releases/tags/$LATEST_VERSION | jq -r '.assets[]? | select(.name == "mac-hayase-'"${LATEST_VERSION#v}"'-mac.dmg") | .browser_download_url')
 
-          # Extract version and download URL with better parsing
-          VERSION=$(echo "$LATEST_RELEASE" | jq -r '.tag_name' | sed 's/^v//')
-          DOWNLOAD_URL=$(echo "$LATEST_RELEASE" | jq -r '.assets[] | select(.name | contains("mac") and contains(".dmg") and (contains(".blockmap") | not)) | .browser_download_url' | head -1)
-
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
           echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
 
-          # Get current version from Cask
-          CURRENT_VERSION=$(grep 'version' Casks/hayase.rb | sed -E 's/.*version "([^"]+)".*/\1/')
-          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-
-          echo "Latest version: $VERSION"
           echo "Current version: $CURRENT_VERSION"
+          echo "Latest version: $LATEST_VERSION"
           echo "Download URL: $DOWNLOAD_URL"
 
       - name: Check if update is needed
         id: check
         run: |
-          if [ "${{ steps.release.outputs.version }}" != "${{ steps.release.outputs.current_version }}" ]; then
+          if [ "${{ steps.release.outputs.latest_version }}" != "${{ steps.release.outputs.current_version }}" ]; then
             echo "update_needed=true" >> $GITHUB_OUTPUT
-            echo "Update needed: ${{ steps.release.outputs.current_version }} -> ${{ steps.release.outputs.version }}"
+            echo "Update needed: ${{ steps.release.outputs.current_version }} -> ${{ steps.release.outputs.latest_version }}"
           else
             echo "update_needed=false" >> $GITHUB_OUTPUT
             echo "No update needed"
@@ -62,7 +56,7 @@ jobs:
         if: steps.check.outputs.update_needed == 'true'
         run: |
           # Update version
-          sed -i '' 's/version "[^"]*"/version "${{ steps.release.outputs.version }}"/' Casks/hayase.rb
+          sed -i '' 's/version "[^"]*"/version "${{ steps.release.outputs.latest_version }}"/' Casks/hayase.rb
 
           # Update SHA256
           sed -i '' 's/sha256 "[^"]*"/sha256 "${{ steps.sha256.outputs.sha256 }}"/' Casks/hayase.rb
@@ -81,5 +75,5 @@ jobs:
         if: steps.check.outputs.update_needed == 'true'
         run: |
           git add Casks/hayase.rb
-          git commit -m "chore: update Hayase to v${{ steps.release.outputs.version }}"
+          git commit -m "chore: update Hayase to v${{ steps.release.outputs.latest_version }}"
           git push
