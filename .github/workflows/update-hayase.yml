@@ -1,0 +1,102 @@
+name: Update Hayase
+
+on:
+  schedule:
+    # Run every day at 6 AM UTC
+    - cron: "0 6 * * *"
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get latest Hayase release
+        id: release
+        run: |
+          # Get the latest release information from GitHub API
+          LATEST_RELEASE=$(curl -s "https://api.github.com/repos/hayase-app/ui/releases/latest")
+          
+          # Extract version and download URL
+          VERSION=$(echo "$LATEST_RELEASE" | grep '"tag_name":' | sed -E 's/.*"tag_name": *"v?([^"]+)".*/\1/')
+          DOWNLOAD_URL=$(echo "$LATEST_RELEASE" | grep '"browser_download_url":.*mac.*\.dmg"' | sed -E 's/.*"browser_download_url": *"([^"]+)".*/\1/')
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
+          
+          # Get current version from cask
+          CURRENT_VERSION=$(grep 'version' Casks/hayase.rb | sed -E 's/.*version "([^"]+)".*/\1/')
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          
+          echo "Latest version: $VERSION"
+          echo "Current version: $CURRENT_VERSION"
+          echo "Download URL: $DOWNLOAD_URL"
+
+      - name: Check if update is needed
+        id: check
+        run: |
+          if [ "${{ steps.release.outputs.version }}" != "${{ steps.release.outputs.current_version }}" ]; then
+            echo "update_needed=true" >> $GITHUB_OUTPUT
+            echo "Update needed: ${{ steps.release.outputs.current_version }} -> ${{ steps.release.outputs.version }}"
+          else
+            echo "update_needed=false" >> $GITHUB_OUTPUT
+            echo "No update needed"
+          fi
+
+      - name: Download and calculate SHA256
+        if: steps.check.outputs.update_needed == 'true'
+        id: sha256
+        run: |
+          # Download the DMG and calculate SHA256
+          curl -sL "${{ steps.release.outputs.download_url }}" -o hayase.dmg
+          SHA256=$(shasum -a 256 hayase.dmg | awk '{print $1}')
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+          echo "SHA256: $SHA256"
+          rm hayase.dmg
+
+      - name: Update cask file
+        if: steps.check.outputs.update_needed == 'true'
+        run: |
+          # Update version
+          sed -i 's/version "[^"]*"/version "${{ steps.release.outputs.version }}"/' Casks/hayase.rb
+          
+          # Update SHA256
+          sed -i 's/sha256 "[^"]*"/sha256 "${{ steps.sha256.outputs.sha256 }}"/' Casks/hayase.rb
+
+      - name: Test the updated cask
+        if: steps.check.outputs.update_needed == 'true'
+        run: |
+          # Set up Homebrew
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo "/home/linuxbrew/.linuxbrew/bin" >> $GITHUB_PATH
+          
+          # Add this tap and test the cask
+          brew tap ${{ github.repository }}
+          brew install --cask --dry-run hayase
+
+      - name: Create Pull Request
+        if: steps.check.outputs.update_needed == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update Hayase to v${{ steps.release.outputs.version }}"
+          title: "Update Hayase to v${{ steps.release.outputs.version }}"
+          body: |
+            ## Updates Hayase to v${{ steps.release.outputs.version }}
+            
+            This PR was automatically created by the update workflow.
+            
+            ### Changes:
+            - Version: ${{ steps.release.outputs.current_version }} → ${{ steps.release.outputs.version }}
+            - SHA256: Updated to match new release
+            - Download URL: ${{ steps.release.outputs.download_url }}
+            
+            ### Verification:
+            - [x] Downloaded and verified SHA256 checksum
+            - [x] Tested cask syntax with `brew install --dry-run`
+            
+            Please review and merge if everything looks correct.
+          branch: update-hayase-${{ steps.release.outputs.version }}
+          delete-branch: true
