@@ -23,7 +23,7 @@ jobs:
 
           # Extract version and download URL with better parsing
           VERSION=$(echo "$LATEST_RELEASE" | jq -r '.tag_name' | sed 's/^v//')
-          DOWNLOAD_URL=$(echo "$LATEST_RELEASE" | jq -r '.assets[] | select(.name | contains("mac") and contains(".dmg")) | .browser_download_url')
+          DOWNLOAD_URL=$(echo "$LATEST_RELEASE" | jq -r '.assets[] | select(.name | contains("mac") and contains(".dmg") and (contains(".blockmap") | not)) | .browser_download_url' | head -1)
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
