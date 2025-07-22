@@ -8,10 +8,9 @@ on:
 
 jobs:
   check-and-update:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -41,13 +40,22 @@ jobs:
             echo "No update needed"
           fi
 
+      - uses: fregante/setup-git-user@v2
+        if: steps.check.outputs.update_needed == 'true'
+
+      - uses: Homebrew/actions/setup-homebrew@main
+        if: steps.check.outputs.update_needed == 'true'
+        with:
+          homebrew-core: true
+          homebrew-cask: true
+
       - name: Download and calculate SHA256
         if: steps.check.outputs.update_needed == 'true'
         id: sha256
         run: |
           # Download the DMG and calculate SHA256
           curl -sL "${{ steps.release.outputs.download_url }}" -o hayase.dmg
-          SHA256=$(shasum -a 256 hayase.dmg | awk '{print $1}')
+          SHA256=$(sha256sum hayase.dmg | awk '{print $1}')
           echo "sha256=$SHA256" >> $GITHUB_OUTPUT
           echo "SHA256: $SHA256"
           rm hayase.dmg
@@ -56,10 +64,10 @@ jobs:
         if: steps.check.outputs.update_needed == 'true'
         run: |
           # Update version
-          sed -i '' 's/version "[^"]*"/version "${{ steps.release.outputs.latest_version }}"/' Casks/hayase.rb
+          sed -i 's/version "[^"]*"/version "${{ steps.release.outputs.latest_version }}"/' Casks/hayase.rb
 
           # Update SHA256
-          sed -i '' 's/sha256 "[^"]*"/sha256 "${{ steps.sha256.outputs.sha256 }}"/' Casks/hayase.rb
+          sed -i 's/sha256 "[^"]*"/sha256 "${{ steps.sha256.outputs.sha256 }}"/' Casks/hayase.rb
 
       - name: Test the updated Cask
         if: steps.check.outputs.update_needed == 'true'
@@ -67,9 +75,6 @@ jobs:
           # Add this tap and test the Cask
           brew tap ${{ github.repository }}
           brew install --cask --dry-run hayase
-
-      - uses: fregante/setup-git-user@v2
-        if: steps.check.outputs.update_needed == 'true'
 
       - name: Commit and push changes
         if: steps.check.outputs.update_needed == 'true'
