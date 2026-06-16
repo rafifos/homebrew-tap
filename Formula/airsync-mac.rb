@@ -1,4 +1,4 @@
-class AirSyncMacOS < Formula
+class AirsyncMac < Formula
   desc "Bring the forbidden macOS continuity to Android"
   homepage "https://sameerasw.com/airsync"
   url "https://github.com/sameerasw/airsync-mac/archive/refs/tags/v3.2.0.tar.gz"
