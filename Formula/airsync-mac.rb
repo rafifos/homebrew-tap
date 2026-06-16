@@ -27,6 +27,9 @@ class AirsyncMac < Formula
     # Homebrew extracts tarballs as read-only, so make it writable.
     FileUtils.chmod_R "u+w", buildpath/"AirSync.xcodeproj"
 
+    # Download Metal toolchain if not already installed (required for .metal shaders)
+    system "xcodebuild", "-downloadComponent", "MetalToolchain"
+
     # Disable nested sandbox for SPM package resolution (Homebrew/discussions#59)
     system "xcodebuild", "-scheme", "AirSync Self Compiled",
            "-configuration", "Release",
