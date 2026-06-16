@@ -19,15 +19,12 @@ jobs:
         run: |
           CURRENT_VERSION=$(grep '^[[:space:]]*version' Casks/airsync-mac.rb | sed -E 's/.*version "([^"]+)".*/\1/')
           LATEST_VERSION=$(curl -s "https://api.github.com/repos/sameerasw/airsync-mac/tags" | jq -r '.[0].name' | sed 's/^v//')
-          DOWNLOAD_URL=$(curl -s https://api.github.com/repos/sameerasw/airsync-mac/releases/tags/v$LATEST_VERSION | jq -r '.assets[] | select(.name == "AirSync.dmg") | .browser_download_url')
 
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
-          echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
 
           echo "Current version: $CURRENT_VERSION"
           echo "Latest version: $LATEST_VERSION"
-          echo "Download URL: $DOWNLOAD_URL"
 
       - name: Check if update is needed
         id: check
@@ -49,25 +46,11 @@ jobs:
           homebrew-core: true
           homebrew-cask: true
 
-      - name: Download and calculate SHA256
-        if: steps.check.outputs.update_needed == 'true'
-        id: sha256
-        run: |
-          # Download the DMG and calculate SHA256
-          curl -sL "${{ steps.release.outputs.download_url }}" -o AirSync.dmg
-          SHA256=$(sha256sum AirSync.dmg | awk '{print $1}')
-          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
-          echo "SHA256: $SHA256"
-          rm AirSync.dmg
-
       - name: Update Cask file
         if: steps.check.outputs.update_needed == 'true'
         run: |
           # Update version
           sed -i 's/version "[^"]*"/version "${{ steps.release.outputs.latest_version }}"/' Casks/airsync-mac.rb
-
-          # Update SHA256
-          sed -i 's/sha256 "[^"]*"/sha256 "${{ steps.sha256.outputs.sha256 }}"/' Casks/airsync-mac.rb
 
       - name: Test the updated Cask
         if: steps.check.outputs.update_needed == 'true'
