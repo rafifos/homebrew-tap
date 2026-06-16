@@ -17,7 +17,7 @@ jobs:
       - name: Get latest AirSync macOS release
         id: release
         run: |
-          CURRENT_VERSION=$(grep '^[[:space:]]*version' Formulas/airsync-mac.rb | sed -E 's/.*version "([^"]+)".*/\1/')
+          CURRENT_VERSION=$(grep '^[[:space:]]*version' Formula/airsync-mac.rb | sed -E 's/.*version "([^"]+)".*/\1/')
           LATEST_VERSION=$(curl -s "https://api.github.com/repos/sameerasw/airsync-mac/tags" | jq -r '.[0].name' | sed 's/^v//')
           DOWNLOAD_URL="https://github.com/sameerasw/airsync-mac/archive/refs/tags/v$LATEST_VERSION.tar.gz"
 
@@ -40,8 +40,11 @@ jobs:
             echo "No update needed"
           fi
 
-      - uses: fregante/setup-git-user@v2
+      - name: Setup Git user
         if: steps.check.outputs.update_needed == 'true'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
 
       - uses: Homebrew/actions/setup-homebrew@main
         if: steps.check.outputs.update_needed == 'true'
