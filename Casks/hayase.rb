@@ -7,6 +7,8 @@ cask "hayase" do
   desc "Stream anime torrents instantly, real-time with no waiting for downloads"
   homepage "https://hayase.watch/"
 
+  deprecate! date: "2026-06-16", because: :no_longer_available
+  
   livecheck do
     url :url
     strategy :github_latest
