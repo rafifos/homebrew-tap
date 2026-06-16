@@ -8,7 +8,9 @@ class AirSyncMacOS < Formula
 
   depends_on macos: :sonoma
   depends_on xcode: ["14.5", :build]
-  depends_on brew: ["adb", "media-control", "scrcpy"]
+  depends_on "android-platform-tools" => :optional
+  depends_on "media-control" => :optional
+  depends_on "scrcpy" => :optional
 
   livecheck do
     url :url
