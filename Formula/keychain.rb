@@ -5,6 +5,8 @@ class Keychain < Formula
   sha256 "81ca327d54e844cbf70910711da61852139cd357bb960318bafcfb2c58a7de10"
   license "GPL-2.0-only"
 
+  deprecate! date: "2026-06-16", because: :unmaintained
+  
   livecheck do
     url "https://github.com/rafifos/keychain.git"
     strategy :github_latest
