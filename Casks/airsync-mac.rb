@@ -12,7 +12,7 @@ cask "airsync-mac" do
     strategy :github_latest
   end
 
-  app "Hayase.app"
+  app "AirSync.app"
 
   zap trash: []
 end
