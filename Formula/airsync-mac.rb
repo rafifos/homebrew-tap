@@ -18,18 +18,21 @@ class AirsyncMac < Formula
   end
 
   def install
-    system "xcodebuild", "-scheme", "AirSync Self Compiled", "-configuration", "Release", "-derivedDataPath", "DerivedData"
+    # Disable nested sandbox for SPM package resolution (see Homebrew/discussions#59)
+    system "xcodebuild", "-scheme", "AirSync Self Compiled",
+           "-configuration", "Release",
+           "-derivedDataPath", "DerivedData",
+           "OTHER_SWIFT_FLAGS=$(inherited) -disable-sandbox",
+           "-IDEPackageSupportDisableManifestSandbox=1",
+           "-IDEPackageSupportDisablePluginExecutionSandbox=1"
     app_path = buildpath/"DerivedData/Build/Products/Release/AirSync.app"
     prefix.install app_path
   end
 
   def caveats
     <<~EOS
-      If the build fails with "sandbox-exec: Operation not permitted",
-      Homebrew's sandbox is blocking Swift Package Manager.
-      Re-run with:
-
-        brew install --no-sandbox airsync-mac
+    The build is compiled without sandbox support to avoid nested sandbox issues with SPM packages.
+    See: https://github.com/orgs/Homebrew/discussions/59
     EOS
   end
 
