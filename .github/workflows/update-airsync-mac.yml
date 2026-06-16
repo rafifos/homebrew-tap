@@ -19,7 +19,7 @@ jobs:
         run: |
           CURRENT_VERSION=$(grep '^[[:space:]]*version' Formulas/airsync-mac.rb | sed -E 's/.*version "([^"]+)".*/\1/')
           LATEST_VERSION=$(curl -s "https://api.github.com/repos/sameerasw/airsync-mac/tags" | jq -r '.[0].name' | sed 's/^v//')
-          DOWNLOAD_URL=$(curl -s https://github.com/sameerasw/airsync-mac/archive/refs/tags/v$LATEST_VERSION.tar.gz)
+          DOWNLOAD_URL="https://github.com/sameerasw/airsync-mac/archive/refs/tags/v$LATEST_VERSION.tar.gz"
 
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
