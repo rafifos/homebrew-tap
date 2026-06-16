@@ -6,7 +6,7 @@ cask "airsync-mac" do
   name "AirSync macOS"
   desc "Bring the forbidden macOS continuity to Android"
   homepage "https://sameerasw.com/airsync"
-  license "MPL-2.0-only"
+  license "MPL-2.0"
   
   livecheck do
     url :url
