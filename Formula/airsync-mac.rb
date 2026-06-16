@@ -18,13 +18,16 @@ class AirsyncMac < Formula
   end
 
   def install
-    # Update project configuration to use SelfCompiled.xcconfig
-    pbxproj = buildpath/"AirSync.xcodeproj/project.pbxproj"
-    pbxproj_content = pbxproj.read
-    pbxproj_content.gsub!("Configs/Shared.xcconfig", "Configs/SelfCompiled.xcconfig")
-    pbxproj.write(pbxproj_content)
+    # Use SelfCompiled.xcconfig instead of Shared.xcconfig
+    inreplace "AirSync.xcodeproj/project.pbxproj",
+              "Configs/Shared.xcconfig",
+              "Configs/SelfCompiled.xcconfig"
 
-    # Disable nested sandbox for SPM package resolution and remove code signing requirements
+    # xcodebuild needs to write to the project during SPM resolution;
+    # Homebrew extracts tarballs as read-only, so make it writable.
+    FileUtils.chmod_R "u+w", buildpath/"AirSync.xcodeproj"
+
+    # Disable nested sandbox for SPM package resolution (Homebrew/discussions#59)
     system "xcodebuild", "-scheme", "AirSync Self Compiled",
            "-configuration", "Release",
            "-derivedDataPath", "DerivedData",
