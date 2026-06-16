@@ -23,6 +23,16 @@ class AirsyncMac < Formula
     prefix.install app_path
   end
 
+  def caveats
+    <<~EOS
+      If the build fails with "sandbox-exec: Operation not permitted",
+      Homebrew's sandbox is blocking Swift Package Manager.
+      Re-run with:
+
+        brew install --no-sandbox airsync-mac
+    EOS
+  end
+
   test do
     assert_predicate prefix/"AirSync.app", :exist?
   end
