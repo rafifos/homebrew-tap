@@ -14,7 +14,7 @@ cask "airsync-mac" do
   end
 
   depends_on xcode: ["15.0", :build]
-  depends_on brew: ["scrcpy", "adb"]
+  depends_on brew: ["adb", "media-control", "scrcpy"]
 
   app "AirSync.app"
 
