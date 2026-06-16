@@ -44,10 +44,14 @@ class AirsyncMac < Formula
 
   def caveats
     <<~EOS
-      AirSync has been installed to #{prefix}/AirSync.app
+      AirSync.app has been installed to:
+        #{prefix}/AirSync.app
 
       To launch AirSync:
         open #{prefix}/AirSync.app
+
+      To make it appear in /Applications and Launchpad:
+        ln -s #{prefix}/AirSync.app /Applications/AirSync.app
 
       Build Configuration:
       • Built without code signing (development certificate not available in Homebrew environment)
