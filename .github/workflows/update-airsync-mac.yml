@@ -10,11 +10,11 @@ jobs:
   check-and-update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get latest Hayase release
+      - name: Get latest AirSync macOS release
         id: release
         run: |
           CURRENT_VERSION=$(grep '^[[:space:]]*version' Casks/airsync-mac.rb | sed -E 's/.*version "([^"]+)".*/\1/')
