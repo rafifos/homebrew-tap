@@ -17,14 +17,17 @@ jobs:
       - name: Get latest AirSync macOS release
         id: release
         run: |
-          CURRENT_VERSION=$(grep '^[[:space:]]*version' Casks/airsync-mac.rb | sed -E 's/.*version "([^"]+)".*/\1/')
+          CURRENT_VERSION=$(grep '^[[:space:]]*version' Formulas/airsync-mac.rb | sed -E 's/.*version "([^"]+)".*/\1/')
           LATEST_VERSION=$(curl -s "https://api.github.com/repos/sameerasw/airsync-mac/tags" | jq -r '.[0].name' | sed 's/^v//')
+          DOWNLOAD_URL=$(curl -s https://github.com/sameerasw/airsync-mac/archive/refs/tags/v$LATEST_VERSION.tar.gz)
 
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
 
           echo "Current version: $CURRENT_VERSION"
           echo "Latest version: $LATEST_VERSION"
+          echo "Download URL: $DOWNLOAD_URL"
 
       - name: Check if update is needed
         id: check
@@ -44,24 +47,37 @@ jobs:
         if: steps.check.outputs.update_needed == 'true'
         with:
           homebrew-core: true
-          homebrew-cask: true
 
-      - name: Update Cask file
+      - name: Download and calculate SHA256
+        if: steps.check.outputs.update_needed == 'true'
+        id: sha256
+        run: |
+          # Download the .tar.gz and calculate SHA256
+          curl -sL "${{ steps.release.outputs.download_url }}" -o AirSync.tar.gz
+          SHA256=$(sha256sum AirSync.tar.gz | awk '{print $1}')
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+          echo "SHA256: $SHA256"
+          rm AirSync.tar.gz
+
+      - name: Update Formula file
         if: steps.check.outputs.update_needed == 'true'
         run: |
           # Update version
-          sed -i 's/version "[^"]*"/version "${{ steps.release.outputs.latest_version }}"/' Casks/airsync-mac.rb
+          sed -i 's/version "[^"]*"/version "${{ steps.release.outputs.latest_version }}"/' Formula/airsync-mac.rb
 
-      - name: Test the updated Cask
+          # Update SHA256
+          sed -i 's/sha256 "[^"]*"/sha256 "${{ steps.sha256.outputs.sha256 }}"/' Formula/airsync-mac.rb
+
+      - name: Test the updated Formula
         if: steps.check.outputs.update_needed == 'true'
         run: |
-          # Add this tap and test the Cask
+          # Add this tap and test the Formula
           brew tap ${{ github.repository }}
-          brew install --cask --dry-run airsync-mac
+          brew install --dry-run airsync-mac
 
       - name: Commit and push changes
         if: steps.check.outputs.update_needed == 'true'
         run: |
-          git add Casks/airsync-mac.rb
+          git add Formula/airsync-mac.rb
           git commit -m "chore: update AirSync to v${{ steps.release.outputs.latest_version }}"
           git push
