@@ -1,18 +1,26 @@
 cask "airsync-mac" do
   version "3.2.0"
-  sha256 "5e74c5fa9fb92c2288070f8220b275a2749981ea7873ac5ecc6d6107475f4629"
 
-  url "https://github.com/sameerasw/airsync-mac/releases/download/v#{version}/AirSync.dmg"
+  url "https://github.com/sameerasw/airsync-mac/archive/refs/tags/v#{version}.tar.gz"
+  
   name "AirSync macOS"
   desc "Bring the forbidden macOS continuity to Android"
   homepage "https://sameerasw.com/airsync"
+  license "MPL-2.0-only"
   
   livecheck do
     url :url
     strategy :github_latest
   end
 
+  depends_on xcode: ["15.0", :build]
+  depends_on brew: ["scrcpy", "adb"]
+
   app "AirSync.app"
+
+  postflight do
+    system "cd #{staged_path} && xcodebuild -scheme 'AirSync Self Compiled' -configuration Release -derivedDataPath DerivedData"
+  end
 
   zap trash: []
 end
