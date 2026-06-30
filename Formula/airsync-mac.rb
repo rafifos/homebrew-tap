@@ -6,7 +6,7 @@ class AirsyncMac < Formula
   version "3.2.0"
   license "MPL-2.0"
 
-  head "https://github.com/sameerasw/airsync-mac.git"
+  head "https://github.com/sameerasw/airsync-mac.git", branch: "main"
 
   depends_on macos: :sonoma
   depends_on xcode: ["14.5", :build]
