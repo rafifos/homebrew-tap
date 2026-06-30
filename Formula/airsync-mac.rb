@@ -8,8 +8,8 @@ class AirsyncMac < Formula
 
   head "https://github.com/sameerasw/airsync-mac.git", branch: "main"
 
-  depends_on macos: :sonoma
-  depends_on xcode: ["14.5", :build]
+  depends_on macos: :golden_gate
+  depends_on xcode: ["27.0", :build]
   depends_on "android-platform-tools" => :optional
   depends_on "media-control" => :optional
   depends_on "scrcpy" => :optional
