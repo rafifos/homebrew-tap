@@ -12,7 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
+          fetch-depth: 0             # otherwise, you will fail to push refs to dest repo
 
       - name: Get latest AirSync macOS release
         id: release
@@ -39,15 +40,6 @@ jobs:
             echo "update_needed=false" >> $GITHUB_OUTPUT
             echo "No update needed"
           fi
-
-      - name: Setup Git user
-        if: steps.check.outputs.update_needed == 'true'
-        env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git remote set-url origin "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
       - uses: Homebrew/actions/setup-homebrew@main
         if: steps.check.outputs.update_needed == 'true'
@@ -83,7 +75,6 @@ jobs:
 
       - name: Commit and push changes
         if: steps.check.outputs.update_needed == 'true'
-        run: |
-          git add Formula/airsync-mac.rb
-          git commit -m "chore: update AirSync to v${{ steps.release.outputs.latest_version }}"
-          git push --set-upstream origin master
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
