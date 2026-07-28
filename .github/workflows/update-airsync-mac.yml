@@ -75,7 +75,10 @@ jobs:
 
       - name: Commit and push changes
         if: steps.check.outputs.update_needed == 'true'
-        uses: actions-js/push@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          message: "chore: update AirSync to v${{ steps.release.outputs.latest_version }}"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git add Formula/airsync-mac.rb
+          git commit -m "chore: update AirSync to v${{ steps.release.outputs.latest_version }}"
+          git push origin HEAD:main
