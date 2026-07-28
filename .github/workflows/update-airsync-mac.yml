@@ -83,4 +83,4 @@ jobs:
         run: |
           git add Formula/airsync-mac.rb
           git commit -m "chore: update AirSync to v${{ steps.release.outputs.latest_version }}"
-          git push
+          git push --set-upstream origin master
