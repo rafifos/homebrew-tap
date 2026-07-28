@@ -41,9 +41,12 @@ jobs:
           fi
 
       - name: Setup Git user
-        uses: oleksiyrudenko/gha-git-credentials@v2-latest
-        with:
-          token: '${{ secrets.GITHUB_TOKEN }}'
+        if: steps.check.outputs.update_needed == 'true'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config --global user.password ${GITHUB_TOKEN}
+          echo "GIT_USER=${GITHUB_ACTOR}:${GITHUB_TOKEN}" >> $GITHUB_ENV
 
       - uses: Homebrew/actions/setup-homebrew@main
         if: steps.check.outputs.update_needed == 'true'
