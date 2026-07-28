@@ -42,9 +42,9 @@ jobs:
 
       - name: Setup Git user
         if: steps.check.outputs.update_needed == 'true'
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+        uses: oleksiyrudenko/gha-git-credentials@v2-latest
+        with:
+          token: '${{ secrets.GITHUB_TOKEN }}'
 
       - uses: Homebrew/actions/setup-homebrew@main
         if: steps.check.outputs.update_needed == 'true'
