@@ -41,7 +41,6 @@ jobs:
           fi
 
       - name: Setup Git user
-        if: steps.check.outputs.update_needed == 'true'
         uses: oleksiyrudenko/gha-git-credentials@v2-latest
         with:
           token: '${{ secrets.GITHUB_TOKEN }}'
