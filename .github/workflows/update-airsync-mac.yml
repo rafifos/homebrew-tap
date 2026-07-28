@@ -60,6 +60,9 @@ jobs:
       - name: Update Formula file
         if: steps.check.outputs.update_needed == 'true'
         run: |
+          # Update url
+          sed -i 's|/tags/v[0-9.]*|/tags/v${{ steps.release.outputs.latest_version }}|' Formula/airsync-mac.rb
+
           # Update version
           sed -i 's/version "[^"]*"/version "${{ steps.release.outputs.latest_version }}"/' Formula/airsync-mac.rb
 
