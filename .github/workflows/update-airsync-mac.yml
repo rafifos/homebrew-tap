@@ -78,3 +78,4 @@ jobs:
         uses: actions-js/push@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          message: "chore: update AirSync to v${{ steps.release.outputs.latest_version }}"
