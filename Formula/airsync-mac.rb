@@ -1,9 +1,9 @@
 class AirsyncMac < Formula
   desc "Bring the forbidden macOS continuity to Android"
   homepage "https://sameerasw.com/airsync"
-  url "https://github.com/sameerasw/airsync-mac/archive/refs/tags/v4.0.1.tar.gz"
-  sha256 "11a12f36b75a90b192ade38b870862ccb893a98029709ac4aa73ad7701c60cb6"
-  version "4.0.1"
+  url "https://github.com/sameerasw/airsync-mac/archive/refs/tags/v4.1.0.tar.gz"
+  sha256 "923ad789ae20fba54e5562a2ebfc58dc92e0423a11445938a3b4a77f71b99126"
+  version "4.1.0"
   license "MPL-2.0"
 
   head "https://github.com/sameerasw/airsync-mac.git", branch: "main"
