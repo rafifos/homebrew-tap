@@ -17,14 +17,24 @@ jobs:
 
       - name: Get latest AirSync macOS release
         id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -o pipefail
+
           CURRENT_VERSION=$(grep '^[[:space:]]*version' Formula/airsync-mac.rb | sed -E 's/.*version "([^"]+)".*/\1/')
-          LATEST_VERSION=$(curl -s "https://api.github.com/repos/sameerasw/airsync-mac/tags" | jq -r '.[0].name' | sed 's/^v//')
+          LATEST_VERSION=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/sameerasw/airsync-mac/tags" | jq -r '.[0].name' | sed 's/^v//')
+
+          if [ -z "$LATEST_VERSION" ] || [ "$LATEST_VERSION" = "null" ]; then
+            echo "::error::Could not determine the latest AirSync version"
+            exit 1
+          fi
+
           DOWNLOAD_URL="https://github.com/sameerasw/airsync-mac/archive/refs/tags/v$LATEST_VERSION.tar.gz"
 
-          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
-          echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
+          echo "current_version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "latest_version=$LATEST_VERSION" >> "$GITHUB_OUTPUT"
+          echo "download_url=$DOWNLOAD_URL" >> "$GITHUB_OUTPUT"
 
           echo "Current version: $CURRENT_VERSION"
           echo "Latest version: $LATEST_VERSION"
@@ -44,36 +54,40 @@ jobs:
       - uses: Homebrew/actions/setup-homebrew@main
         if: steps.check.outputs.update_needed == 'true'
         with:
-          homebrew-core: true
+          core: true
 
       - name: Download and calculate SHA256
         if: steps.check.outputs.update_needed == 'true'
         id: sha256
         run: |
           # Download the .tar.gz and calculate SHA256
-          curl -sL "${{ steps.release.outputs.download_url }}" -o AirSync.tar.gz
-          SHA256=$(sha256sum AirSync.tar.gz | awk '{print $1}')
-          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+          curl -fsSL "${{ steps.release.outputs.download_url }}" -o AirSync.tar.gz
+          gzip -t AirSync.tar.gz # fail if the download is not a valid tarball (e.g. a 404 body)
+          SHA256=$(shasum -a 256 AirSync.tar.gz | awk '{print $1}')
+          echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
           echo "SHA256: $SHA256"
           rm AirSync.tar.gz
 
       - name: Update Formula file
         if: steps.check.outputs.update_needed == 'true'
+        env:
+          LATEST_VERSION: ${{ steps.release.outputs.latest_version }}
+          SHA256: ${{ steps.sha256.outputs.sha256 }}
         run: |
-          # Update url
-          sed -i 's|/tags/v[0-9.]*|/tags/v${{ steps.release.outputs.latest_version }}|' Formula/airsync-mac.rb
+          # perl -pi is portable (BSD sed needs -i '', GNU sed does not accept it)
+          # single quotes: the shell must not expand $ENV{...}, perl expands it from the environment
+          perl -pi -e 's|/tags/v[0-9.]+\.tar\.gz|/tags/v$ENV{LATEST_VERSION}.tar.gz|' Formula/airsync-mac.rb
+          perl -pi -e 's/version "[^"]*"/version "$ENV{LATEST_VERSION}"/' Formula/airsync-mac.rb
+          perl -pi -e 's/sha256 "[^"]*"/sha256 "$ENV{SHA256}"/' Formula/airsync-mac.rb
 
-          # Update version
-          sed -i 's/version "[^"]*"/version "${{ steps.release.outputs.latest_version }}"/' Formula/airsync-mac.rb
-
-          # Update SHA256
-          sed -i 's/sha256 "[^"]*"/sha256 "${{ steps.sha256.outputs.sha256 }}"/' Formula/airsync-mac.rb
+          git --no-pager diff -- Formula/airsync-mac.rb
 
       - name: Test the updated Formula
         if: steps.check.outputs.update_needed == 'true'
         run: |
           # Add this tap and test the Formula
           brew tap ${{ github.repository }}
+          brew fetch --retry airsync-mac # downloads and verifies the sha256
           brew install --dry-run airsync-mac
 
       - name: Commit and push changes
