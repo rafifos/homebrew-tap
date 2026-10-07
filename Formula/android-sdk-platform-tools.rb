@@ -7,7 +7,7 @@ class AndroidSdkPlatformTools < Formula
   sha256 "e6cb61b92b5669ed6fd9645fad836d8f888321cd3098b75588a54679c204b7dc"
   license :cannot_represent
 
-  deprecate! date: "2026-06-16", because: "available upstream"
+  disable! date: "2026-06-16", because: "is available upstream", replacement_cask: "android-platform-tools"
   
   def install
     libexec.install Dir["*"]
