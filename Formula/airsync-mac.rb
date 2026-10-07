@@ -16,22 +16,22 @@ class AirsyncMac < Formula
   desc "Bring the forbidden macOS continuity to Android"
   homepage "https://sameerasw.com/airsync"
   url "https://github.com/sameerasw/airsync-mac/archive/refs/tags/v4.1.0.tar.gz"
-  sha256 "923ad789ae20fba54e5562a2ebfc58dc92e0423a11445938a3b4a77f71b99126"
   version "4.1.0"
+  sha256 "923ad789ae20fba54e5562a2ebfc58dc92e0423a11445938a3b4a77f71b99126"
   license "MPL-2.0"
 
   head "https://github.com/sameerasw/airsync-mac.git", branch: "main"
-
-  depends_on macos: :golden_gate
-  depends_on xcode: ["27.0", :build]
-  depends_on AndroidPlatformToolsRequirement => :optional
-  depends_on "media-control" => :optional
-  depends_on "scrcpy" => :optional
 
   livecheck do
     url :url
     strategy :github_latest
   end
+
+  depends_on xcode: ["27.0", :build]
+  depends_on macos: :golden_gate
+  depends_on AndroidPlatformToolsRequirement => :optional
+  depends_on "media-control" => :optional
+  depends_on "scrcpy" => :optional
 
   def install
     # Use SelfCompiled.xcconfig instead of Shared.xcconfig
@@ -41,13 +41,13 @@ class AirsyncMac < Formula
 
     # xcodebuild needs to write to the project during SPM resolution;
     # Homebrew extracts tarballs as read-only, so make it writable.
-    FileUtils.chmod_R "u+w", buildpath/"AirSync.xcodeproj"
+    chmod_R "u+w", buildpath/"AirSync.xcodeproj"
 
     # Download Metal toolchain if not already installed (required for .metal shaders)
-    system "xcodebuild", "-downloadComponent", "MetalToolchain"
+    xcodebuild "-downloadComponent", "MetalToolchain"
 
     # Disable nested sandbox for SPM package resolution (Homebrew/discussions#59)
-    system "xcodebuild", "-scheme", "AirSync Self Compiled",
+    xcodebuild "-scheme", "AirSync Self Compiled",
            "-configuration", "Release",
            "-derivedDataPath", "DerivedData",
            "CODE_SIGN_IDENTITY=", "CODE_SIGNING_REQUIRED=NO", "AD_HOC_CODE_SIGNING_ALLOWED=YES",
@@ -85,6 +85,6 @@ class AirsyncMac < Formula
   end
 
   test do
-    assert_predicate prefix/"AirSync.app", :exist?
+    assert_path_exists prefix/"AirSync.app"
   end
 end
