@@ -1,3 +1,17 @@
+class AndroidPlatformToolsRequirement < Requirement
+  cask "android-platform-tools"
+
+  satisfy(build_env: false) { which("adb") }
+
+  def message
+    "This formula requires android-platform-tools. Please run `brew install --cask android-platform-tools` first."
+  end
+
+  def display_s
+    "android-platform-tools"
+  end
+end
+
 class AirsyncMac < Formula
   desc "Bring the forbidden macOS continuity to Android"
   homepage "https://sameerasw.com/airsync"
@@ -10,7 +24,7 @@ class AirsyncMac < Formula
 
   depends_on macos: :golden_gate
   depends_on xcode: ["27.0", :build]
-  depends_on "android-platform-tools" => :optional
+  depends_on AndroidPlatformToolsRequirement => :optional
   depends_on "media-control" => :optional
   depends_on "scrcpy" => :optional
 
