@@ -1,3 +1,19 @@
+class MetalToolchainRequirement < Requirement
+  fatal true
+
+  satisfy(build_env: false) do
+    Utils.popen_read("xcodebuild", "-showComponent", "metalToolchain").include?("Status: installed")
+  end
+
+  def message
+    "This formula requires the Metal toolchain. Please run `xcodebuild -downloadComponent MetalToolchain` first."
+  end
+
+  def display_s
+    "Metal toolchain"
+  end
+end
+
 class AndroidPlatformToolsRequirement < Requirement
   cask "android-platform-tools"
 
@@ -29,6 +45,7 @@ class AirsyncMac < Formula
 
   depends_on xcode: ["27.0", :build]
   depends_on macos: :golden_gate
+  depends_on MetalToolchainRequirement
   depends_on AndroidPlatformToolsRequirement => :optional
   depends_on "media-control" => :optional
   depends_on "scrcpy" => :optional
@@ -42,9 +59,6 @@ class AirsyncMac < Formula
     # xcodebuild needs to write to the project during SPM resolution;
     # Homebrew extracts tarballs as read-only, so make it writable.
     chmod_R "u+w", buildpath/"AirSync.xcodeproj"
-
-    # Download Metal toolchain if not already installed (required for .metal shaders)
-    xcodebuild "-downloadComponent", "MetalToolchain"
 
     # Disable nested sandbox for SPM package resolution (Homebrew/discussions#59)
     xcodebuild "-scheme", "AirSync Self Compiled",
