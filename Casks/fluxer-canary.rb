@@ -24,6 +24,10 @@ cask "fluxer-canary" do
 
   app "Fluxer Canary.app"
 
+  uninstall quit:       "app.fluxer.canary",
+            signal:     [["TERM", "app.fluxer.canary"]],
+            on_upgrade: :signal
+
   zap trash: [
     "~/Library/Application Support/CrashReporter/Fluxer Canary_*.plist",
     "~/Library/Application Support/fluxercanary",
