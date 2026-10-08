@@ -107,11 +107,15 @@ jobs:
       - name: Test the updated cask
         if: steps.check.outputs.update_needed == 'true'
         run: |
-          # Add this tap and test the cask from the working tree (the fresh tap clone
-          # does not contain the changes yet, so copy the updated file over it)
+          # setup-homebrew symlinks the tap directory to this checkout
+          # (/opt/homebrew/Library/Taps/<owner>/homebrew-tap -> the workspace), so the cask
+          # is usually already in place. cp exits 1 with "are identical (not copied)" when
+          # source and destination are the same file, which `bash -e` treats as a failure,
+          # so only copy when the files actually differ.
           brew tap ${{ github.repository }}
           TAP_PATH=$(brew --repository rafifos/tap)
-          cp Casks/fluxer-canary.rb "$TAP_PATH/Casks/fluxer-canary.rb"
+          cmp -s Casks/fluxer-canary.rb "$TAP_PATH/Casks/fluxer-canary.rb" ||
+            cp Casks/fluxer-canary.rb "$TAP_PATH/Casks/fluxer-canary.rb"
 
           brew style --cask "$TAP_PATH/Casks/fluxer-canary.rb"
           brew fetch --retry --cask rafifos/tap/fluxer-canary # downloads and verifies the sha256
