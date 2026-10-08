@@ -51,25 +51,21 @@ class AirsyncMac < Formula
   depends_on "scrcpy" => :optional
 
   def install
-    # Use SelfCompiled.xcconfig instead of Shared.xcconfig
-    inreplace "AirSync.xcodeproj/project.pbxproj",
-              "Configs/Shared.xcconfig",
-              "Configs/SelfCompiled.xcconfig"
-
     # xcodebuild needs to write to the project during SPM resolution;
     # Homebrew extracts tarballs as read-only, so make it writable.
     chmod_R "u+w", buildpath/"AirSync.xcodeproj"
 
-    # Disable nested sandbox for SPM package resolution (Homebrew/discussions#59)
+    # Build the configuration the "AirSync Self Compiled" scheme uses natively.
+    # Configs/SelfCompiled.xcconfig sets SWIFT_ACTIVE_COMPILATION_CONDITIONS = SELF_COMPILED.
+    # Disable nested sandbox for SPM package resolution (Homebrew/discussions#59).
     xcodebuild "-scheme", "AirSync Self Compiled",
-           "-configuration", "Release",
-           "-derivedDataPath", "DerivedData",
-           "CODE_SIGN_IDENTITY=", "CODE_SIGNING_REQUIRED=NO", "AD_HOC_CODE_SIGNING_ALLOWED=YES",
-           "OTHER_SWIFT_FLAGS=$(inherited) -disable-sandbox",
-           "-IDEPackageSupportDisableManifestSandbox=1",
-           "-IDEPackageSupportDisablePluginExecutionSandbox=1"
-    app_path = buildpath/"DerivedData/Build/Products/Release/AirSync.app"
-    prefix.install app_path
+               "-configuration", "Self Compiled",
+               "-derivedDataPath", "DerivedData",
+               "CODE_SIGN_IDENTITY=", "CODE_SIGNING_REQUIRED=NO", "AD_HOC_CODE_SIGNING_ALLOWED=YES",
+               "OTHER_SWIFT_FLAGS=$(inherited) -disable-sandbox",
+               "-IDEPackageSupportDisableManifestSandbox=1",
+               "-IDEPackageSupportDisablePluginExecutionSandbox=1"
+    prefix.install "DerivedData/Build/Products/Self Compiled/AirSync.app"
   end
 
   def caveats
@@ -84,15 +80,15 @@ class AirsyncMac < Formula
         ln -s #{prefix}/AirSync.app /Applications/AirSync.app
 
       Build Configuration:
-      • Built without code signing (development certificate not available in Homebrew environment)
-      • Sandbox restrictions disabled to enable SPM package resolution
-      • Self-compiled build configuration used (feature-gated with SELF_COMPILED flag)
-      • Requires macOS Sonoma or later with Xcode 14.5+
+      - Built without code signing (development certificate not available in Homebrew environment)
+      - Sandbox restrictions disabled to enable SPM package resolution
+      - Self-compiled build configuration used (feature-gated with SELF_COMPILED flag)
+      - Requires macOS Golden Gate or later with Xcode 27+
 
       Optional dependencies:
-      • android-platform-tools: For Android device integration
-      • media-control: Enhanced media control features
-      • scrcpy: Screen mirroring capabilities
+      - android-platform-tools: For Android device integration
+      - media-control: Enhanced media control features
+      - scrcpy: Screen mirroring capabilities
 
       For more information, visit: https://sameerasw.com/airsync
     EOS
@@ -100,5 +96,6 @@ class AirsyncMac < Formula
 
   test do
     assert_path_exists prefix/"AirSync.app"
+    assert_path_exists prefix/"AirSync.app/Contents/PlugIns/AirSyncWidgetExtension.appex"
   end
 end
