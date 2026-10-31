@@ -1,6 +1,6 @@
 cask "fluxer-canary" do
-  version "2026.1031.143117"
-  sha256 "662f5c7580dfc77e8e5ba779e5d1ba5d20876ede0593b0f4c5a696fa1ba591b2"
+  version "2026.1031.201021"
+  sha256 "0eaed9be1bc129d890ab75729ffa13d6cb97509e0075afa6d4785d6bced1b86f"
 
   url "https://github.com/fluxerapp/fluxer/releases/download/fluxer-desktop-canary%40#{version}/Fluxer-Canary-#{version}-mac-universal.dmg"
   name "Fluxer Canary"
